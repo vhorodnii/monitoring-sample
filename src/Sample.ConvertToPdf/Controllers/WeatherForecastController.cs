@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Monitoring.Sample.Controllers
+namespace Sample.ConvertToPdf.Controllers
 {
     [ApiController]
     [Route("[controller]")]
