@@ -37,13 +37,13 @@ public static class OpenTelemetryExtensions
                     .AddHttpClientInstrumentation(o =>
                     {
                         o.RecordException = true;
-                    })
-                    .AddConsoleExporter();
+                    });
+                    //.AddConsoleExporter();
             })
             .WithMetrics(builder =>
             {
-                builder.AddAspNetCoreInstrumentation()
-                    .AddConsoleExporter();
+                builder.AddAspNetCoreInstrumentation();
+                    //.AddConsoleExporter();
             });
 
         return services;

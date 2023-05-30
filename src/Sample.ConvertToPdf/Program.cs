@@ -1,25 +1,27 @@
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
+using MassTransit;
+using Sample.ConvertToPdf.Converter;
+using Sample.Infrastucture;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(builder =>
+builder.Logging.AddApplicationLogging("PDF Converter");
+builder.Services.AddApplicationTelemetry("PDF Converter");
+builder.Services.AddLocalFileStorage(builder.Configuration);
+builder.Services.AddMassTransit(c =>
+{
+    c.SetKebabCaseEndpointNameFormatter();
+    c.UsingRabbitMq((bus, cfg) =>
     {
-        builder.AddService("PDF Converter");
-    })
-    .WithTracing(builder =>
-    {
-        builder.AddAspNetCoreInstrumentation()
-            .AddConsoleExporter();
-    })
-    .WithMetrics(builder =>
-    {
-        builder.AddAspNetCoreInstrumentation()
-            .AddConsoleExporter();
+        cfg.Host("rabbitmq://localhost", x =>
+        {
+            x.Username("myuser");
+            x.Password("mypassword");
+        });
+        cfg.Durable = true;
+        cfg.ConfigureEndpoints(bus);
     });
+    c.AddConsumer<ConvertToPdfConsumer>();
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
