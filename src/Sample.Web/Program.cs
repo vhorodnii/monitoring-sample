@@ -1,5 +1,5 @@
 using MassTransit;
-using Sample.Infrastucture;
+using Sample.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 

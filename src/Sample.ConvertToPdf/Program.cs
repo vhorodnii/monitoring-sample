@@ -1,6 +1,6 @@
 using MassTransit;
 using Sample.ConvertToPdf.Converter;
-using Sample.Infrastucture;
+using Sample.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -3,6 +3,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Sample.Shared;
 
 namespace Microsoft.Extensions.Logging;
 
@@ -33,17 +34,26 @@ public static class OpenTelemetryExtensions
             .WithTracing(builder =>
             {
                 builder
-                    .AddAspNetCoreInstrumentation()
+                    .AddSource(TelemetryConstants.AppSourceName)
+                    .AddAspNetCoreInstrumentation(o =>
+                    {
+                        o.EnrichWithHttpResponse = (activity, resp) =>
+                        {
+                            resp.Headers.CorrelationContext = activity.TraceId.ToString();
+                        };
+                        o.RecordException = true;
+                    })
                     .AddHttpClientInstrumentation(o =>
                     {
                         o.RecordException = true;
-                    });
-                    //.AddConsoleExporter();
+                    })
+                    .AddJaegerExporter();
             })
             .WithMetrics(builder =>
             {
-                builder.AddAspNetCoreInstrumentation();
-                    //.AddConsoleExporter();
+                builder
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
             });
 
         return services;
