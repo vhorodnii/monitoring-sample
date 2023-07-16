@@ -1,6 +1,8 @@
 using MassTransit;
+using Sample.ConvertToPdf.Clean;
 using Sample.ConvertToPdf.Converter;
-using Sample.Shared;
+using Sample.Shared.FileStorage;
+using Sample.Shared.Telemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +22,9 @@ builder.Services.AddMassTransit(c =>
         cfg.Durable = true;
         cfg.ConfigureEndpoints(bus);
     });
+    c.AddPublishObserver<TelemetryPropagationPublishObserver>();
     c.AddConsumer<ConvertToPdfConsumer>();
+    c.AddConsumer<MetadataCleanerConsumer>();
 });
 
 builder.Services.AddControllers();
@@ -30,12 +34,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
 

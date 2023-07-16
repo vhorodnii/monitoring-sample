@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenTelemetry.Trace;
+using Sample.Shared.Telemetry;
 using System.IO.Abstractions;
 
 namespace Sample.Shared.FileStorage
@@ -25,7 +26,7 @@ namespace Sample.Shared.FileStorage
 
         public bool FilePresent(string path)
         {
-            using var _ = _tracer.StartActiveSpan("LocalDisk")
+            using var _ = _tracer.StartActiveSpan("LocalDisk.FilePresent")
                 .SetAttribute("file", path);
             var files = _directory.GetFiles(path);
             return files.Length > 0;
@@ -33,7 +34,7 @@ namespace Sample.Shared.FileStorage
 
         public Stream GetFile(string path)
         {
-            using var _ = _tracer.StartActiveSpan("LocalDisk")
+            using var _ = _tracer.StartActiveSpan("LocalDisk.Read")
                 .SetAttribute("file", path);
             var files = _directory.GetFiles(path);
             if (files.Length == 0)
@@ -46,7 +47,7 @@ namespace Sample.Shared.FileStorage
 
         public void SaveFile(string path, Stream content)
         {
-            using var _ = _tracer.StartActiveSpan("LocalDisk")
+            using var _ = _tracer.StartActiveSpan("LocalDisk.Write")
                 .SetAttribute("file", path);
             var file = _fileSystem.FileInfo.New(Path.Combine(_directory.FullName, path));
             using var fs = file.OpenWrite();

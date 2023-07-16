@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sample.Shared.FileStorage;
 using System.IO.Abstractions;
 
-namespace Sample.Shared;
+namespace Sample.Shared.FileStorage;
 
 public static class FileStorageExtensions
 {

@@ -1,5 +1,8 @@
 using MassTransit;
-using Sample.Shared;
+using Sample.Shared.FileStorage;
+using Sample.Shared.Telemetry;
+using Sample.Web.Consumers;
+using Sample.Web.ProcessingTask;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,9 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false);
 builder.Logging.AddApplicationLogging("App Gateway");
 builder.Services.AddApplicationTelemetry("App Gateway");
 builder.Services.AddLocalFileStorage(builder.Configuration);
+
+builder.Services.AddSingleton<ITasksService, TasksService>();
+
 builder.Services.AddMassTransit(c =>
 {
     c.SetKebabCaseEndpointNameFormatter();
@@ -22,6 +28,11 @@ builder.Services.AddMassTransit(c =>
 
         cfg.ConfigureEndpoints(bus);
     });
+
+    c.AddPublishObserver<TelemetryPropagationPublishObserver>();
+    c.AddConsumer<NewTaskReceivedConsumer>();
+    c.AddConsumer<DocumentCleanedConsumer>();
+    c.AddConsumer<DocumentConvertedToPdfConsumer>();
 });
 
 
@@ -32,12 +43,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
 

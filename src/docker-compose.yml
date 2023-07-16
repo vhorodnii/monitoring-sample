@@ -21,6 +21,15 @@ services:
       - COLLECTOR_ZIPKIN_HTTP_PORT=9411
     command: ["--log-level=debug"]
 
+  # datadog-agent:
+  #   image: gcr.io/datadoghq/agent:7
+  #   environment:
+  #     DD_APM_ENABLED: "true"
+  #     DD_APM_NON_LOCAL_TRAFFIC: "true"
+  #     DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+  #     DD_API_KEY: 4d2ab0ad74aa1a3042134fffc99dc12b
+  #     # DD_HOSTNAME: datadog.vhorodnii.com
+
 
 volumes:
   rabbitmq_data:

@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Sample.Shared;
 
-namespace Microsoft.Extensions.Logging;
+namespace Sample.Shared.Telemetry;
 
 public static class OpenTelemetryExtensions
 {
@@ -14,11 +14,14 @@ public static class OpenTelemetryExtensions
         builder.ClearProviders();
         builder.AddOpenTelemetry(options =>
         {
-            var resourceBuilder = ResourceBuilder.CreateDefault();
-            resourceBuilder.AddService(serviceName);
+            var resourceBuilder = ResourceBuilder
+                .CreateDefault()
+                .AddService(serviceName);
+
             options.SetResourceBuilder(resourceBuilder);
 
-            options.AddConsoleExporter();
+            options
+                .AddConsoleExporter();
         });
 
         return builder;
@@ -35,18 +38,18 @@ public static class OpenTelemetryExtensions
             {
                 builder
                     .AddSource(TelemetryConstants.AppSourceName)
+                    .AddSource("MassTransit.RabbitMQ")
+                    // this line enables tracing in masstransit https://github.com/open-telemetry/opentelemetry-dotnet-contrib/issues/326#issuecomment-1120637599
+                    .AddSource("MassTransit")
                     .AddAspNetCoreInstrumentation(o =>
                     {
-                        o.EnrichWithHttpResponse = (activity, resp) =>
-                        {
-                            resp.Headers.CorrelationContext = activity.TraceId.ToString();
-                        };
                         o.RecordException = true;
                     })
                     .AddHttpClientInstrumentation(o =>
                     {
                         o.RecordException = true;
                     })
+                    //.AddMassTransitInstrumentation()
                     .AddJaegerExporter();
             })
             .WithMetrics(builder =>
@@ -55,6 +58,13 @@ public static class OpenTelemetryExtensions
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation();
             });
+
+        services.Configure<OpenTelemetryLoggerOptions>(opt =>
+        {
+            opt.IncludeScopes = true;
+            opt.ParseStateValues = true;
+            opt.IncludeFormattedMessage = true;
+        });
 
         return services;
     }

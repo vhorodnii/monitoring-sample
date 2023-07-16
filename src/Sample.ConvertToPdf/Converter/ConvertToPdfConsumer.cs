@@ -21,8 +21,7 @@ namespace Sample.ConvertToPdf.Converter
 
             await context.Publish(new FileConvertedToPdf
             {
-                OriginalFile = context.Message.Path,
-                ConvertedFile = "",
+                Id = context.Message.Path,
             });
 
             _logger.LogInformation("File {File} converted to PDF.", context.Message.Path);
